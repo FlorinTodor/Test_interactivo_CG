@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Interactivo CG</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #333;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            text-align: center;
+            background-color: #444;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+        h1, h2, h3 {
+            margin-bottom: 10px;
+        }
+        .question {
+            margin-bottom: 20px;
+        }
+        .answer {
+            display: block;
+            background-color: #555;
+            color: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .answer:hover {
+            background-color: #777;
+        }
+        #next-button, #start-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-top: 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        #next-button:hover, #start-button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        #score-container {
+            display: none;
+        }
+        #incorrect-questions-container {
+            display: none;
+            margin-top: 20px;
+        }
+        ul {
+            padding-left: 0;
+            list-style-type: none;
+            text-align: left;
+        }
+        ul li {
+            margin-bottom: 5px;
+        }
+        #reset-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#reset-button:hover {
+    background-color: #c82333;
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Tests Contabilidad de Gestión primer parcial</h1>
+        <h2 id="author-name">Florin Emanuel Todor Gliga && Laura Zafra Alarcos</h2>
+        <div id="question-container">
+            <p id=question>Haz click en "Comenzar Test" para empezar. Disfruta</p>
+            <div id="question-options"></div> <!-- Aquí se mostrarán las opciones de respuesta -->
+        </div>
+        <div class="button-container" id="answer-buttons" style="display: none;">
+            <!-- No se necesitan botones aquí para las opciones -->
+        </div>
+        <button id="next-button" onclick="nextQuestion()" style="display: none;">Siguiente Pregunta</button>
+        <div>
+            <p>Respondidas: <span id="answered-count">0</span></p>
+            <p>Aciertos: <span id="correct-count">0</span></p>
+            <p>Fallos: <span id="incorrect-count">0</span></p>
+            <p>Preguntas disponibles: <span id="available-questions-count">0</span></p>
+            <p id="score-container" style="display: none;">Nota: <span id="score">0</span></p>
+        </div>
+        <div id="incorrect-questions-container" style="display: none;">
+            <h3>Preguntas falladas:</h3>
+            <ul id="incorrect-questions-list"></ul>
+        </div>
+        <button id="start-button" onclick="startTest()">Comenzar Test</button>
+        
+    </div>
+
+    <script>
+        const allQuestions = 
+    [
+
+        {
+            question: "El coste es una magnitud",
+            options: [
+                "a. Arbitraria, en función de los criterios aplicados.",
+                "b. Relativa, en función de los criterios aplicados.",
+                "c. Exacta, como valoración de factores productivos.",
+                "d. Ninguna de las respuestas anteriores es correcta."
+            ],
+            correct: "b"
+        },
+        {
+            question: "Los costes fijos son independientes del volumen de actividad, por lo que",
+            options: [
+                "a. Pueden variar por modificaciones del IPC.",
+                "b. Se mantienen fijos para intervalos de producción.",
+                "c. Su cuantía nunca varía entre distintos periodos.",
+                "d. Ninguna de las respuestas anteriores es correcta."
+            ],
+            correct: "a"
+        },
+        {
+            question: "Desde el punto de vista de la Economía de la Empresa",
+            options: [
+                "a. Coste diferencial = Coste marginal",
+                "b. Coste diferencial = coste unitario * incremento de producción",
+                "c. Coste suplementario = coste total de la producción",
+                "d. Ninguna de las respuestas anteriores es correcta"
+            ],
+            correct: "d"
+        },
+        {
+            question: "La histéresis de costes es un fenómeno que puede afectar a la curva del coste total cuando",
+            options: [
+                "a. Existen costes semifijos irreversibles.",
+                "b. Existen costes semivariables irreversibles.",
+                "c. Existen costes semifijos reversibles.",
+                "d. Ninguna de las respuestas anteriores es correcta."
+            ],
+            correct: "a"
+        },
+        {
+            question: "En el análisis de la producción como causa",
+            options: [
+                "a. En la conjunta, los productos compiten entre sí.",
+                "b. En la paralela, los productos compiten entre sí.",
+                "c. En la alternativa, los productos compiten entre sí.",
+                "d. Ninguna de las respuestas anteriores es correcta."
+            ],
+            correct: "c"
+        },
+        {
+            question: "En la descomposición del tiempo calendario, en un entorno productivo tradicional",
+            options: [
+                "a. Tiempo activo operario = tiempo activo maquinaria.",
+                "b. Tiempo preparación operario = tiempo preparación maquinaria.",
+                "c. Tiempo transformación operario = tiempo elaboración material.",
+                "d. Ninguna de las respuestas anteriores es correcta."
+            ],
+            correct: "c"
+        },
+        {
+            question: "En la fase de localización, mediante la operación de redistribución",
+            options: [
+                "a. Se asignan los costes indirectos a los productos.",
+                "b. Se asignan los costes de los centros auxiliares a los principales.",
+                "c. Se asignan los costes indirectos entre los centros principales y auxiliares.",
+                "d. Ninguna de las respuestas anteriores es correcta."
+            ],
+            correct: "b"
+        },
+        {
+            question: "En la clasificación de los centros de coste, según su intervención en el ciclo de explotación, los centros",
+            options: [
+                "a. Principales ceden sus costes directamente a los portadores.",
+                "b. Auxiliares comunes no ceden costes a los centros principales.",
+                "c. Auxiliares de los principales ceden sus costes directamente a portadores.",
+                "d. Ninguna de las respuestas anteriores es correcta."
+            ],
+            correct: "a"
+        },
+        {
+            question: "En la clasificación de los centros de costes, según el nivel de agregación",
+            options: [
+                "a. Los lugares de coste siempre coinciden con lugares de trabajo.",
+                "b. Las secciones de coste siempre coinciden con secciones de trabajo.",
+                "c. Las unidades de coste siempre coinciden con las unidades de trabajo.",
+                "d. Ninguna de las respuestas anteriores es correcta."
+            ],
+            correct: "c"
+        },
+        {
+            question: "De acuerdo con el DCS, la producción se valora a",
+            options: [
+                "a. Coste variable y fijo de fabricación.",
+                "b. A coste variable de fabricación.",
+                "c. A coste completo del ciclo de producción.",
+                "d. A coste variable de fabricación y de comercialización."
+            ],
+            correct: "b"
+        },
+        {
+            question: "Entre las críticas planteadas al FCR, se encuentra",
+            options: [
+                "a. La repercusión del coste variable en el coste unitario.",
+                "b. La arbitrariedad en la atribución del coste variable a nivel unitario.",
+                "c. La improcedencia de inventariar costes de comercialización.",
+                "d. Ninguna de las respuestas anteriores es correcta."
+            ],
+            correct: "d"
+        },
+        {
+            question: "En la comparación de los enfoques DCS y DCD",
+            options: [
+                "a. Las diferencias se presentan en el coste variable de comercialización.",
+                "b. El coste unitario de producción es el mismo.",
+                "c. El coste unitario de producción resulta diferente.",
+                "d. Los resultados siempre difieren."
+            ],
+            correct: "b"
+        },
+        {
+        question: "Señale cuál de las siguientes afirmaciones es errónea en relación a los objetivos de la contabilidad interna o de costes:",
+        options: [
+            "a) Suministro de la información relevante necesaria para apoyar la toma de decisiones de los órganos de gestión.",
+            "b) Análisis, evaluación y control de las actividades productivas.",
+            "c) Destinar información a agentes externos de la empresa en base a la legislación contable vigente, cuyo principal exponente son las cuentas anuales."
+        ],
+        correct: "c"
+        },
+        {
+            question: "Las magnitudes de flujo dentro del ámbito externo son:",
+            options: [
+                "a) Inversiones financieras de la empresa (en sentido estático), débitos o derechos de cobro a favor de la empresa y créditos y obligaciones de pago a cargo de la empresa.",
+                "b) Compras y gastos; ventas e ingresos; pagos y cobros; inversiones financieras de la empresa (en sentido dinámico).",
+                "c) Dinero en existencia; inversiones económicas positivas y negativas; resultados."
+            ],
+            correct: "b"
+        },
+        {
+            question: "Las magnitudes de fondo fundamentales en el ámbito interno son:",
+            options: [
+                "a) Compras y gastos; ventas e ingresos; pagos y cobros; inversiones financieras de la empresa (en sentido dinámico).",
+                "b) Producción o trabajos en curso; producción en stock.",
+                "c) Consumos y costes; producción y valor de la producción; colocación y calor de la colocación."
+            ],
+            correct: "b"
+        },
+        {
+            question: "En la asignación de costes en el direct cost simple, los costes fijos:",
+            options: [
+                "a) Son calificados de costes del producto, son costes que se asignan a la producción.",
+                "b) En ningún caso intervienen en el valor de la producción; no son costes del producto. Son costes del periodo.",
+                "c) Influyen en el cálculo del coste variable de fabricación unitario."
+            ],
+            correct: "b"
+        },
+        {
+            question: "En el tratamiento de los costes en el full cost atenuado:",
+            options: [
+                "a) Son costes del producto aquellos del ciclo de producción; entre los que se encuentran compras y transformación.",
+                "b) Son costes del periodo aquellos del ciclo de producción (compras y transformación).",
+                "c) Son costes del producto aquellos del ciclo de comercialización (ventas y administración)."
+            ],
+            correct: "a"
+        },
+        {
+                question: "Las magnitudes fundamentales de flujo de ámbito externo son:",
+                options: [
+                    "a) Compras y gastos, ventas e ingresos, pagos y cobros, inversiones financieras, en la empresa y de la empresa en sentido estático.",
+                    "b) Consumos y costes, producción y valor de producción, colocación y valor de la colocación.",
+                    "c) Compras y gastos, ventas e ingresos, pagos y cobros, inversiones financieras, en la empresa y de la empresa en sentido dinámico."
+                ],
+                correct: "c"
+            
+
+        },
+        {
+            question: "La vinculación temporal de gasto, compra y pago en relación al bonobus para viajes futuros es:",
+            options: [
+                "a) Primero pago y después gasto y compra.",
+                "b) Gasto y compra y al mismo tiempo pago.",
+                "c) Primero gasto y compra y después pago."
+            ],
+            correct: "a"
+        },
+        {
+            question: "Señale la respuesta correcta:",
+            options: [
+                "a) La contabilidad interna pertenece a la microcontabilidad privada y a su vez a la contabilidad aplicada.",
+                "b) La contabilidad externa pertenece a la macrocontabilidad y a su vez a la contabilidad aplicada.",
+                "c) La contabilidad externa pertenece a la microcontabilidad pública y a su vez a la contabilidad general."
+            ],
+            correct: "a"
+        },
+        {
+            question: "En relación a las siguientes magnitudes:",
+            options: [
+                "a. Compra y gasto siempre coinciden",
+                "b. El pago siempre coincide con el gasto",
+                "c. El pago siempre coincide con la compra"
+            ],
+            correct: "a"
+        },
+
+        {
+            question: "En el ámbito interno de la empresa:",
+            options: [
+                "a) Se produce circulación económica y financiera.",
+                "b) Se produce circulación económica.",
+                "c) Se producirá una u otra dependiendo de la actividad a que se dedique la empresa."
+            ],
+            correct: "b"
+        },
+        {
+            question: "Entre los objetivos de la Contabilidad de Costes, se encuentra:",
+            options: [
+                "a. La captación, medida, valoración y representación de la problemática económico-técnica de la empresa",
+                "b. Suministro de la información relevante necesaria para apoyar la toma de decisiones de los órganos de gestión",
+                "c. Ambas respuestas son correctas"
+            ],
+            correct: "c"
+        },
+
+        {
+            question: "Respecto al ámbito interno y externo de la circulación de valores en la empresa decimos que...",
+            options: [
+                "a) Existe tanto corriente financiera como económica en el ámbito interno de la circulación.",
+                "b) En el ámbito externo sólo hay corriente financiera y en el interno, económica.",
+                "c) Sólo tenemos circulación financiera en el ámbito interno."
+            ],
+            correct: "a"
+        },
+        {
+            question: "¿A qué nos referimos cuando utilizamos la palabra 'cobro'?",
+            options: [
+                "a) A las cantidades de bienes o servicios que pasan de la empresa al mundo exterior.",
+                "b) Al equivalente de lo vendido por la empresa expresado en unidades monetarias.",
+                "c) A la entrada de dinero real en la empresa."
+            ],
+            correct: "c"
+        },
+        {
+            question: "La definición: 'rama de la contabilidad aplicada que, con respecto a una microunidad económica, nos permite el conocimiento cualitativo y cuantitativo de su realidad económico−técnica...' se corresponde con:",
+            options: [
+                "a) La Contabilidad interna o de costes",
+                "b) La Macrocontabilidad",
+                "c) La Contabilidad externa"
+            ],
+            correct: "a"
+        },
+        
+    {
+        question: "Señale la respuesta correcta:",
+        options: [
+            "a) La compra y el pago se producen siempre simultáneamente",
+            "b) La venta y el ingreso se producen simultáneamente",
+            "c) El gasto es la magnitud que representa la salida de efectivo (dinero) por parte de la empresa"
+        ],
+        correct: "b"
+    },
+    {
+        question: "En el ámbito interno de la circulación de la empresa, el coste es:",
+        options: [
+            "a) La expresión del consumo",
+            "b) El precio de venta de un bien",
+            "c) Es una magnitud relativa"
+        ],
+        correct: "c"
+    },
+    {
+        question: "La Contabilidad interna o de costes:",
+        options: [
+            "a) Se ocupa del estudio del movimiento interno de valores de la transformación productiva operada por la empresa, a fin de conocer las magnitudes técnicas y económicas que lo configuran",
+            "b) Lleva a cabo el análisis, evaluación y control de las actividades productivas",
+            "c) Las dos respuestas son correctas"
+        ],
+        correct: "c"
+    },
+    {
+        question: "Un gasto es:",
+        options: [
+            "a) Cuando se produce la transferencia monetaria.",
+            "b) El equivalente monetario de la compra.",
+            "c) La adquisición de bienes o servicios."
+        ],
+        correct: "b"
+    },
+    {
+        question: "Seleccione cuál de estas afirmaciones es verdadera:",
+        options: [
+            "a) La contabilidad interna nos permite en todo momento el conocimiento cualitativo y cuantitativo de la realidad económico-técnica con el fin específico de permitir el control de la producción y los costes de dicha unidad.",
+            "b) La contabilidad interna nos permite en todo momento el conocimiento cualitativo y cuantitativo de la realidad económico-financiera con el fin específico de permitir el control de la producción y los costes de dicha unidad.",
+            "c) Ninguna de las anteriores es correcta"
+        ],
+        correct: "a"
+    },
+    {
+        question: "¿Cuál de estos pertenece a los fines de la contabilidad interna o de costes?",
+        options: [
+            "a) Captación, medida, valoración y representación de la problemática económico-técnica de la empresa.",
+            "b) Análisis, evaluación y control de las actividades productivas.",
+            "c) Las dos respuestas anteriores son correctas."
+        ],
+        correct: "c"
+    },
+    {
+        question: "La expresión monetaria del consumo son:",
+        options: [
+            "a) Gastos",
+            "b) Pagos",
+            "c) Costes"
+        ],
+        correct: "c"
+    },
+    {
+        question: "La contabilidad interna o de costes:",
+        options: [
+            "a) Permite el conocimiento de su realidad económico-técnica con el fin de controlar la producción y llevar a cabo la medida de la eficiencia",
+            "b) Permite el conocimiento de su realidad económico-financiera con el fin de poner de relieve la situación de su unidad y su evolución",
+            "c) Las opciones A y B son correctas"
+        ],
+        correct: "a"
+    },
+    {
+        question: "Las magnitudes de fondo en el ámbito interno:",
+        options: [
+            "a) Visión dinámica: Van a la cuenta de P y G o flujos de caja",
+            "b) Visión estática: Van al balance de situación",
+            "c) Incluyen inversiones financieras de la empresa"
+        ],
+        correct: "b"
+    },
+    {
+        question: "Marque la respuesta correcta:",
+        options: [
+            "a) Siempre que tiene lugar una compra tiene lugar un gasto",
+            "b) Siempre que tiene lugar una venta tiene lugar un ingreso",
+            "c) A y B son correctas"
+        ],
+        correct: "c"
+    },
+    {
+        question: "¿Cuál es una diferencia esencial en el tratamiento contable de las transacciones de los ámbitos interno y externo?",
+        options: [
+            "a) Similares objetivos y destinatarios de la información elaborada",
+            "b) Libertad de interpretación frente al cumplimiento de la norma",
+            "c) A y B son correctas"
+        ],
+        correct: "b"
+    },
+    {
+        question: "Objetivos de la contabilidad interna o de costes:",
+        options: [
+            "a) Suministrar información relevante necesaria para apoyar la toma de decisiones de los órganos de gestión",
+            "b) Captación, medida, valoración y representación de la problemática económico-financiera de la empresa",
+            "c) Determinación del resultado periódico externo con criterios económicos"
+        ],
+        correct: "a"
+    },
+    {
+        question: "¿En qué ámbito de la empresa no existe circulación financiera?",
+        options: [
+            "a) En el ámbito externo de la circulación.",
+            "b) En el ámbito interno de la circulación.",
+            "c) En ninguno de los dos."
+        ],
+        correct: "b"
+    },
+    {
+        question: "Señale aquella magnitud que no pertenezca a las magnitudes de fondo del ámbito interno.",
+        options: [
+            "a) Producción en curso de fabricación.",
+            "b) Producción en stock.",
+            "c) Resultados."
+        ],
+        correct: "c"
+    },
+    {
+        question: "El cobro se da cuando...",
+        options: [
+            "a) Se produce la transferencia monetaria del ingreso.",
+            "b) Se realiza la cesión de bienes y servicios de la empresa al mundo externo.",
+            "c) Se adquieren bienes o servicios, se haya o no realizado la ocupación material de los mismos."
+        ],
+        correct: "a"
+    },
+    {
+        question: "De las siguientes afirmaciones, señale la opción correcta:",
+        options: [
+            "a) El full cost valora por un importe mayor las existencias finales de productos acabados que el direct cost.",
+            "b) El full cost valora por un importe inferior las existencias finales de productos acabados que el direct cost.",
+            "c) Tanto el enfoque del full cost como el direct cost valoran las existencias finales de productos acabados por el mismo importe."
+        ],
+        correct: "a"
+    },
+    {
+        question: "En el enfoque del direct cost simple, ¿con qué se identifican los costes del periodo?",
+        options: [
+            "a) Con los costes fijos.",
+            "b) Con los costes variables.",
+            "c) Ninguna de las anteriores."
+        ],
+        correct: "b"
+    },
+    {
+        question: "Definición de contabilidad interna o de costes:",
+        options: [
+            "a) “Rama de la Contabilidad aplicada que, con respecto a una microunidad económica, nos permite en todo momento el conocimiento cualitativo y cuantitativo de su realidad económico-financiera, con el fin específico de poner de relieve la situación de dicha unidad y su evolución en el tiempo”.",
+            "b) “Rama de la Contabilidad aplicada que, con respecto a una microunidad económica, nos permite en todo momento el conocimiento cualitativo y cuantitativo de su realidad económico-técnica, con el fin específico de permitir el control de la producción y los costes de dicha unidad y llevar a cabo la medida de la eficiencia técnico-productiva de la misma”.",
+            "c) Ambas respuestas son correctas."
+        ],
+        correct: "b"
+    },
+    {
+        question: "Las magnitudes fundamentales del ámbito interno se clasifican en magnitudes flujo y magnitudes fondo. Marque la verdadera:",
+        options: [
+            "a) Son magnitudes flujo del ámbito interno: Los consumos y costes, producción y valor de la producción y colocación y valor de la colocación.",
+            "b) Son magnitudes fondo del ámbito interno: Dinero en existencia y débitos o derechos de cobro a favor de la empresa.",
+            "c) Son magnitudes flujo del ámbito interno: Compras y gastos, ventas e ingresos, pagos y cobros, inversiones financieras, en la empresa y de la empresa (en sentido dinámico)."
+        ],
+        correct: "a"
+    },
+    {
+        question: "Señale la opción no correcta. Son objetivos de la contabilidad interna o de costes:",
+        options: [
+            "a) Descomposición del resultado interno en forma tal que permita conocer la contribución a su generación.",
+            "b) Suministro de la información relevante necesaria para apoyar la toma de decisiones de los órganos de gestión.",
+            "c) Suministro de la información relevante necesaria a todos los posibles grupos interesados (stakeholders) conforme al PCG."
+        ],
+        correct: "c"
+    },
+    {
+        question: "¿Cuál de las siguientes opciones no es una de las diferencias esenciales en el tratamiento contable de los ámbitos interno y externo?",
+        options: [
+            "a) Diferente naturaleza de las transacciones abarcadas.",
+            "b) Diferente periodicidad en el tiempo.",
+            "c) Libertad de interpretación frente al incumplimiento de la norma."
+        ],
+        correct: "c"
+    },
+    {
+        question: "El orden de las fases en los subsistemas de una unidad económica de producción es:",
+        options: [
+            "a) Financiación, producción, inversión, desinversión.",
+            "b) Financiación, inversión, producción, desinversión.",
+            "c) Inversión, financiación, producción, desinversión."
+        ],
+        correct: "b"
+    },
+    {
+        question: "¿Cuál de las siguientes opciones no constituye una magnitud de flujo fundamental del ámbito externo?",
+        options: [
+            "a) Débitos o derechos de cobro a favor de la empresa.",
+            "b) Compra y gastos.",
+            "c) Pagos y cobros."
+        ],
+        correct: "a"
+    },
+    {
+        question: "El subsistema de producción de la empresa pertenece a:",
+        options: [
+            "a) La corriente económica del ámbito interno de la empresa.",
+            "b) La circulación financiera del ámbito interno de la empresa.",
+            "c) Al ámbito externo de la empresa."
+        ],
+        correct: "a"
+    },
+    {
+        question: "Son magnitudes flujo del ámbito interno:",
+        options: [
+            "a) El stock de bienes y servicios en un momento determinado.",
+            "b) El traspaso de bienes y servicios en un momento de tiempo entre dos agentes económicos o partes de una empresa.",
+            "c) Ninguna de las afirmaciones anteriores es correcta."
+        ],
+        correct: "b"
+    },
+    {
+        question: "La contabilidad interna o de costes:",
+        options: [
+            "a) Nos permite el conocimiento cualitativo y cuantitativo de su realidad económico-financiera o externa con el fin de poner en relieve la situación de dicha unidad y su evolución en el tiempo.",
+            "b) Nos permite el conocimiento cualitativo y cuantitativo de su realidad económico-técnica o interna con el fin de controlar la producción y los costes de dicha unidad y llevar a cabo la medida de la eficiencia técnico-productiva de la misma.",
+            "c) Sólo realiza un conocimiento cuantitativo de su realidad económico-técnica o interna."
+        ],
+        correct: "b"
+    },
+    {
+        question: "¿Cuál de las siguientes no es una magnitud del ámbito externo?",
+        options: [
+            "a) Ventas e Ingresos",
+            "b) Pagos y cobros",
+            "c) Consumos y Costes"
+        ],
+        correct: "c"
+    },
+    {
+        question: "Señale qué corriente se asocia mejor con la siguiente definición de Contabilidad de Costes: “Es el suministro de todo tipo de información en relación al ámbito productivo.",
+        options: [
+            "a) Corriente Restrictiva",
+            "b) Corriente Renovadora",
+            "c) Corriente Integradora"
+        ],
+        correct: "b"
+    },
+
+    {
+        question: "¿Qué subsistema, dentro del orden establecido, viene después de la desinversión?",
+        options: [
+            "a) Financiación",
+            "b) Inversión",
+            "c) Producción"
+        ],
+        correct: "a"
+    },
+    {
+        question: "¿Cuál de las opciones siguientes será contabilizada dentro del periodo, en direct cost desarrollado?",
+        options: [
+            "a) Costes Variables de Fabricación",
+            "b) Costes Fijos Comunes",
+            "c) Costes Fijos Propios"
+        ],
+        correct: "b"
+    },
+    {
+        question: "¿Cuál de las siguientes opciones está encuadrada dentro de los costes intrínsecos?",
+        options: [
+            "a) Costes Comerciales",
+            "b) Costes de Administración",
+            "c) Costes de Transformación"
+        ],
+        correct: "c"
+    },
+    {
+        question: "Dentro de la estructura del proceso de cálculo de costes, la clasificación:",
+        options: [
+            "a) Se basa en medir y valorar el consumo de los factores productivos.",
+            "b) Consiste en afectar el coste directo e imputación de los restantes costes acumulados en los centros principales.",
+            "c) No se encuentra dentro del proceso de cálculo de costes."
+        ],
+        correct: "a"
+    },
+    {
+        question: "En cuanto al tratamiento de los distintos costes en el full costing atenuado:",
+        options: [
+            "a) Los costes intrínsecos y costes a reintegrar ambos pertenecen al ciclo de producción.",
+            "b) Los costes a reintegrar no pertenecen al full costing atenuado sino al direct cost desarrollado.",
+            "c) Los costes intrínsecos pertenecen al ciclo de producción antes de su colocación en la empresa y los costes a reintegrar son costes del período."
+        ],
+        correct: "c"
+    },
+    {
+        question: "La corriente renovadora defiende que:",
+        options: [
+            "a) Contabilidad de Gestión y Contabilidad de Costes constituyen diferentes denominaciones para identificar la misma rama de la Contabilidad de la empresa que se centra básicamente en el ámbito interno.",
+            "b) La Contabilidad de Gestión suministra información para tareas de planificación y control y toma de decisiones.",
+            "c) La Contabilidad de Costes se extiende a todos los ámbitos y niveles de decisión en la empresa."
+        ],
+        correct: "c"
+    },
+    {
+        question: "Toda cesión de productos:",
+        options: [
+            "a) Constituye una venta e implica un ingreso.",
+            "b) Constituye una venta, implica un ingreso y da derecho a un cobro.",
+            "c) Constituye una venta, implica un ingreso y obliga a un pago."
+        ],
+        correct: "b"
+    },
+    {
+        question: "La corriente en términos reales:",
+        options: [
+            "a) Conlleva la compra de factores productivos y la venta de productos.",
+            "b) Conlleva unos pagos y expectativas de pagos y unos cobros y expectativas de cobros.",
+            "c) Es aquella en la que se produce la circulación monetaria."
+        ],
+        correct: "a"
+    },
+    {
+        question: "Respecto a los portadores de coste cabe afirmar que:",
+        options: [
+            "a) A cada manifestación de la producción corresponderá un portador de coste.",
+            "b) Cumplen la función acumulativa del valor de la totalidad del consumo de factores productivos.",
+            "c) A y B son correctas."
+        ],
+        correct: "c"
+    },
+    {
+        question: "El FULL COSTING Atenuado:",
+        options: [
+            "a) Implica que tanto costes fijos como variables se imputan a la producción, la cual va directamente a la colocación.",
+            "b) Distingue el ciclo productivo, constituido por las compras y la transformación, y el ciclo de comercialización, constituido por las ventas y la administración.",
+            "c) Supone que los costes variables se dividan en costes variables de comercialización y costes variables de fabricación, los cuales se dirigen a colocación, mientras que los costes fijos van directamente al periodo."
+        ],
+        correct: "b"
+    },
+    {
+        question: "¿Cuál enfoque de asignación de costes arrojará un resultado más favorable para la empresa?",
+        options: [
+            "a) El FULL COSTING ATENUADO pues carga menos costes al resultado que los demás enfoques.",
+            "b) El DIRECT COSTING SIMPLE pues carga más costes al resultado que los demás enfoques.",
+            "c) El FULL COST RADICAL pues carga menos costes al resultado que los demás enfoques."
+        ],
+        correct: "c"
+    },
+    {
+        question: "¿Afectan las distintas corrientes de asignación en la partida de ingresos?",
+        options: [
+            "a) Sí",
+            "b) No",
+            "c) A veces"
+        ],
+        correct: "b"
+    },
+    {
+        question: "Dentro del doble enfoque del coste encontramos:",
+        options: [
+            "a) Coste Directo e Indirecto",
+            "b) Coste Real y Monetario",
+            "c) Costes intrínsecos y extrínsecos"
+        ],
+        correct: "a"
+    },
+    {
+        question: "Un coste caracterizado como fijo a nivel global de la empresa puede...",
+        options: [
+            "a) Que lo sea como variable al nivel de un centro de actividad particular.",
+            "b) No puede ser variable dentro del centro de actividad particular.",
+            "c) Ha de ser variable al nivel de un centro de actividad."
+        ],
+        correct: "a"
+    },
+    {
+        question: "Los costes fijos son...",
+        options: [
+            "a) Aquellos que no fluctúan frente a una variación en el volumen de producción, dentro de los límites definidos por la capacidad productiva disponible, a lo largo del periodo de estudio.",
+            "b) Aquellos que fluctúan frente a una variación en el volumen de producción, dentro de los límites definidos por la capacidad productiva disponible, a lo largo del periodo de estudio.",
+            "c) Aquellos que no fluctúan frente a una variación en el volumen de producción, sin límites definidos por la capacidad productiva disponible, a lo largo del periodo de estudio."
+        ],
+        correct: "a"
+    },
+    {
+        question: "Son factores condicionantes del proceso de segmentación:",
+        options: [
+            "a) Factores directos e indirectos",
+            "b) Factores objetivos y subjetivos",
+            "c) Factores extrínsecos e intrínsecos"
+        ],
+        correct: "b"
+    },
+    {
+        question: "Las claves de distribución son:",
+        options: [
+            "a) Claves primarias y secundarias de distribución",
+            "b) Claves objetivas y subjetivas de distribución",
+            "c) Claves fijas y variables de distribución"
+        ],
+        correct: "b"
+    },
+    {
+        question: "¿Qué relación entre el CF-CV y CD-CI?",
+        options: [
+            "a) Los costes variables vienen determinados por costes directos",
+            "b) No se puede hacer una relación de correspondencia entre ambos",
+            "c) A y B son incorrectas"
+        ],
+        correct: "b"
+    },
+    {
+        question: "Marque la respuesta incorrecta:",
+        options: [
+            "a) Los costes indirectos quedan acumulados en los centros principales que mantienen relaciones directas con el producto",
+            "b) En el Full Cost Radical el coste unitario fluctúa ya que depende del nivel de producción que tiene la empresa",
+            "c) En el Direct Cost Simple los CF de fabricación van a parar a la producción"
+        ],
+        correct: "c"
+    },
+    {
+        question: "La medición y valoración del consumo de los factores productivos pertenece a la fase de:",
+        options: [
+            "a) Clasificación",
+            "b) Localización",
+            "c) Imputación"
+        ],
+        correct: "a"
+    },
+    {
+        question: "En el método del Full Cost Radical:",
+        options: [
+            "a) Se centra en la exclusión de los costes fijos, sólo los costes variables deben reintegrarse en el coste del producto.",
+            "b) Persigue la incorporación al producto de la totalidad de los costes, tanto fijos como variables, sin discriminación.",
+            "c) El tratamiento de las distintas clases de costes debe ser distinto según el ciclo donde incida."
+        ],
+        correct: "b"
+    },
+    {
+        question: "Los costes directos:",
+        options: [
+            "a) No pueden atribuirse de forma inequívoca a los productos, así que no resulta factible hacer un seguimiento pormenorizado de ellos.",
+            "b) No contribuyen directamente a la transformación del producto sino que son facilitados por un centro de apoyo.",
+            "c) Se les atribuye una materia prima de manera inequívoca para un producto."
+        ],
+        correct: "c"
+    },
+    {
+        question: "La fase de localización del proceso de formación y asignación de costes consiste en la:",
+        options: [
+            "a) Afectación del coste directo e imputación de los restantes costes acumulados en los centros principales.",
+            "b) Distribución del coste de los factores entre los centros de redistribución del coste y los centros auxiliares.",
+            "c) Medición y valoración del consumo de los factores productivos."
+        ],
+        correct: "b"
+    },
+    {
+        question: "El método direct costing desarrollado:",
+        options: [
+            "a) Distingue entre Costes fijos comunes de aquellos otros que puedan asignarse a un elemento concreto, de manera que si se eliminase de la producción se evitaría ese coste.",
+            "b) Es igual que el direct costing simple.",
+            "c) Las dos respuestas son falsas."
+        ],
+        correct: "a"
+    },
+    {
+        question: "Respecto al método full costing radical:",
+        options: [
+            "a) Asigna todos los costes a la producción.",
+            "b) No tiene en cuenta los costes de administración.",
+            "c) Las dos respuestas son correctas."
+        ],
+        correct: "c"
+    },
+
+
+
+
+    {
+        question: "Señale la respuesta incorrecta:",
+        options: [
+            "a) En el Direct Costing Simple los únicos costes ligados a la producción son los costes variables de fabricación",
+            "b) En el Full Costing Radical, todos los costes incurridos se imputan a la producción excepto los costes de administración",
+            "c) Para el Direct Costing los costes fijos son costes del periodo, no importa cuál sea la producción ya que se van a trasladar directamente al resultado"
+        ],
+        correct: "b"
+    },
+    {
+        question: "Podemos considerar como centro auxiliar de coste...",
+        options: [
+            "a) Los distintos departamentos que componen una empresa",
+            "b) Al mantenimiento y limpieza de un gimnasio",
+            "c) A la sección de aprovisionamiento de un pub"
+        ],
+        correct: "C"
+    }, 
+    {
+        question: "¿Qué se pretende con la fase de localización?",
+        options: [
+            "a) Dotar de cierta racionalidad la asignación de costes indirectos a los productos",
+            "b) Cuantificar el consumo efectivo",
+            "c) Ambas respuestas son correctas"
+        ],
+        correct: "a"
+    },
+    {
+        question: "¿Qué sistema de coste hace caso omiso en el desarrollo del proceso de captación registral a la fase de localización?",
+        options: [
+            "a) Sistemas orgánicos predeterminados",
+            "b) Sistemas orgánicos históricos",
+            "c) Sistemas inorgánicos"
+        ],
+        correct: "c"
+    },
+    {
+        question: "La localización es:",
+        options: [
+            "a) Medición y valoración del consumo de los factores productivos.",
+            "b) Distribución del coste de los factores entre los centros y la redistribución del coste de los centros auxiliares.",
+            "c) Afectación del coste directo e imputación de los restantes costes acumulados en los centros principales."
+        ],
+        correct: "b"
+    },
+    {
+        question: "¿Cuáles son los costes a reintegrar?",
+        options: [
+            "a) Costes de aprovisionamiento y costes comerciales.",
+            "b) Costes de administración y costes comerciales.",
+            "c) Costes de aprovisionamiento y costes de administración."
+        ],
+        correct: "b"
+    },
+    {
+        question: "En relación con la Contabilidad de gestión y la Contabilidad de costes:",
+        options: [
+            "a) Se puede decir que la Contabilidad de gestión está orientada a usuarios internos y que la Contabilidad de coste a los usuarios externos.",
+            "b) Ambas se fusionan en la rama que se denomina contabilidad externa.",
+            "c) Se puede decir que la Contabilidad de gestión está orientada a usuarios externos y la Contabilidad de costes a los usuarios internos."
+        ],
+        correct: "C"
+    },
+    {
+        question: "Respecto los términos ingreso, venta y cobro:",
+        options: [
+            "a) La venta equivale a un compromiso de cesión de la propiedad cuya equivalencia económica sería el ingreso.",
+            "b) Cuando existe una venta se produce una absoluta coincidencia temporal con el cobro.",
+            "c) No toda cesión de bienes o servicios implica un ingreso, constituyendo una venta y dando derecho a un cobro."
+        ],
+        correct: "c"
+    },
+    {
+        question: "Señala la diferencia correcta:",
+        options: [
+            "a) Los términos gasto-ingreso ostentan un verdadero sentido económico mientras que pago-cobro son conceptos de caja de estricta significación financiera.",
+            "b) El consumo referido al proceso productivo implica un consumo monetario mientras que el coste implica un consumo real.",
+            "c) La contabilidad externa tiene el fin específico de llevar un control de los costes de la producción y la contabilidad interna es una rama de la contabilidad aplicada, encargada de poner en relieve la situación de la realidad económico-financiera."
+        ],
+        correct: "a"
+    },
+    {
+        question: "Una empresa que fabrica seis productos:",
+        options: [
+            "a) Podrían ser productos terminados y semiterminados, en su caso productos distintos.",
+            "b) Tiene obligatoriamente una producción compuesta.",
+            "c) No existe obligación de que su producción será compuesta."
+        ],
+        correct: "c"
+    },
+    {
+        question: "Si una empresa utiliza un enfoque direct cost simple, en la valoración de los costes variables:",
+        options: [
+            "a) Hay que distinguir entre costes variables de la producción colocada y los de comercialización y ambos tendrán en cuenta las existencias vendidas en el periodo.",
+            "b) Los costes de comercialización serán los costes de ventas de ese periodo.",
+            "c) Si utiliza el criterio LIFO en la valoración de salidas de almacén, primero se contabilizan los costes variables de las existencias iniciales y luego se consideran los de la producción del periodo en relación con las ventas."
+        ],
+        correct: "b"
+    },
+    {
+        question: "En relación con los costes directos e indirectos:",
+        options: [
+            "a) Como ejemplo de coste directo podemos encontrar los costes por el sueldo del personal directivo, las amortizaciones o los seguros...",
+            "b) Este criterio de clasificación distingue los costes por su naturaleza.",
+            "c) Los costes directos no tienen una relación causa-efecto perfectamente definida."
+        ],
+        correct: "b"
+    }, 
+    {
+        question: "El precio de adquisición de una partida es igual a:",
+        options: [
+            "a) Valor contable de la partida/Cantidad efectivamente recibida",
+            "b) Valor de adquisición de la partida/Cantidad efectivamente recibida",
+            "c) Valor realizable de la partida/Cantidad efectivamente recibida"
+        ],
+        correct: "b"
+    },
+    {
+        question: "Son criterios de valoración aplicables al consumo de materiales:",
+        options: [
+            "a) Políticos y Reales",
+            "b) Imaginarios y Reales",
+            "c) Ninguna de las dos"
+        ],
+        correct: "c"
+    },
+    {
+        question: "En clase hemos estudiado:",
+        options: [
+            "a) El sistema de primas de Hasley",
+            "b) El sistema de primas de Rowan",
+            "c) A y B son correctas"
+        ],
+        correct: "c"
+    },
+    {
+        question: "El coste de amortización:",
+        options: [
+            "a) Deriva del carácter pluriperiódico del consumo del equipo productivo.",
+            "b) Es una magnitud absoluta, pues su determinación se basa en una serie de hipótesis incontrastables hasta el término de la vida útil del bien.",
+            "c) Es una pregunta trampa del profesor Vera"
+        ],
+        correct: "a"
+    },
+    {
+        question: "Una de las diferencias entre los modelos Direct cost y Full cost es:",
+        options: [
+            "a) El segundo tiene en cuenta la estructura organizativa de la empresa mientras que el primero no.",
+            "b) El segundo no tiene en cuenta la estructura organizativa de la empresa mientras que el primero sí.",
+            "c) No hay ninguna diferencia en relación a la estructura organizativa entre ambos enfoques."
+        ],
+        correct: "a"
+    },
+    {
+        question: "La operación de afectación consiste en relacionar:",
+        options: [
+            "a) Los costes indirectos con los portadores.",
+            "b) Los costes directos con los portadores.",
+            "c) Los costes directos con los indirectos."
+        ],
+        correct: "b"
+    },
+    {
+        question: "El proceso mediante el cual se relacionan los costes de las secciones a los portadores se denomina:",
+        options: [
+            "a) Afectación",
+            "b) Producción",
+            "c) Imputación"
+        ],
+        correct: "a"
+    },
+    {
+        question: "Los elementos, tangibles e intangibles, que la empresa adquiere del exterior con el fin de utilizarlos en el proceso productivo, bien para la obtención de productos o bien para el mantenimiento de los equipos productivos son:",
+        options: [
+            "a) Suministros",
+            "b) Materiales",
+            "c) Materias primas"
+        ],
+        correct: "c"
+    },
+    { //
+        question: "El coste de la mano de obra, cuando la empresa emplea un sistema de retribución a destajo es siempre tratado como:",
+        options: [
+            "a) Un coste indirecto",
+            "b) Un coste directo",
+            "c) Un coste directo o indirecto"
+        ],
+        correct: "b"
+    },
+    {
+        question: "En la presentación de resultados del full cost atenuado, al margen le debemos restar:",
+        options: [
+            "a) No debemos restarle nada",
+            "b) Los costes intrínsecos de colocación",
+            "c) Los costes a reintegrar del período"
+        ],
+        correct: "c"
+    },
+    {
+        question: "Dentro de las fases del proceso de cálculo de costes, la medición es:",
+        options: [
+            "a) Medición y valoración del consumo de los factores productivos.",
+            "b) Distribución del coste de los factores entre los centros y redistribución del coste de los centros auxiliares",
+            "c) Afectación del coste directo e imputación de los restantes costes acumulados en los centros principales."
+        ],
+        correct: "a"
+    },
+    {
+        question: "Entre el Full Cost Radical y el Direct Cost simple:",
+        options: [
+            "a) El Full Cost Radical lleva menos costes al stock final",
+            "b) El Direct Cost Simple dentro del Eº de Pérdidas y Ganancias posee un margen bruto y semibruto",
+            "c) Ninguna de las anteriores es correcta"
+        ],
+        correct: "c"
+    },
+    {
+        question: "El coeficiente de actividad se define como:",
+        options: [
+            "a) Actividad/Tiempo",
+            "b) Actividad real/ Actividad normal",
+            "c) Actividad con mayor coste/Actividad con menor coste"
+        ],
+        correct: "b"
+    },
+    {
+        question: "Una de las críticas al Full Cost Radical es:",
+        options: [
+            "a) Arbitrariedad en la atribución de los costes variables a nivel unitario",
+            "b) Dependencia del coste unitario respecto de las fluctuaciones del nivel de actividad.",
+            "c) Excesiva importancia de la inventarización de los costes fijos."
+        ],
+        correct: "b"
+    },
+    {
+        question: "En el enfoque del full cost radical los costes del periodo se identifican con:",
+        options: [
+            "a) Costes fijos.",
+            "b) Costes totales.",
+            "c) Costes variables."
+        ],
+        correct: "a"
+    },
+    {
+        question: "El enfoque del full cost radical en comparación con el direct cost simple:",
+        options: [
+            "a) Valora las existencias finales de productos acabados por un importe mayor.",
+            "b) Valora las existencias finales de productos acabados por un importe menor.",
+            "c) Valora las existencias finales de productos acabados por el mismo importe."
+        ],
+        correct: "a"
+    },
+    {
+        question: "Señale la afirmación correcta:",
+        options: [
+            "a) Los suministros son bienes almacenables, tangibles o intangibles.",
+            "b) En los suministros, al encontrarse ausente la función de almacenamiento, se registra una coincidencia temporal entre las magnitudes compra y consumo.",
+            "c) Su consumo se puede medir a través de contador, requiriendo asimismo de otra red de distribución exterior a la empresa."
+        ],
+        correct: "c"
+    },
+    {
+        question: "¿Qué elementos componen el coste de personal?",
+        options: [
+            "a) El salario base, los complementos salariales, y las aportaciones de la empresa y del trabajador a la Seguridad Social.",
+            "b) El salario base, los complementos salariales y las aportaciones de la empresa a la Seguridad Social.",
+            "c) El salario base, las gratificaciones o pagas extraordinarias, los complementos salariales y las aportaciones de la empresa a la Seguridad Social."
+        ],
+        correct: "c"
+    },
+    {
+        question: "La regla general respecto de los materiales establece que…",
+        options: [
+            "a) Las materias primas se consideran costes directos y el resto de materiales se consideran costes indirectos.",
+            "b) Las materias primas se consideran costes indirectos y el resto de materiales se consideran costes directos.",
+            "c) Todos los materiales se consideran costes directos al depender de la producción de la empresa."
+        ],
+        correct: "a"
+    }
+
+
+
+    ];
+        
+
+
+
+const questionsPerTest = 10; // Total de preguntas en el test
+        const maxScore = 4; // Puntaje máximo posible
+        const pointsPerQuestion = 0.4 // Puntos por pregunta
+        let availableQuestions = JSON.parse(localStorage.getItem('availableQuestions')) || allQuestions.slice();
+        let shuffledQuestions, currentQuestionIndex;
+        let correctCount = 0;
+        let incorrectCount = 0;
+        let answeredCount = 0;
+        let incorrectQuestions = [];
+
+        document.getElementById('available-questions-count').textContent = availableQuestions.length;
+
+        function startTest() {
+            if (availableQuestions.length === 0) {
+                alert('Reiniciando preguntas...');
+                resetQuestions();
+                // Mostrar el botón de inicio después de reiniciar
+                document.getElementById('start-button').style.display = 'block';
+                return; // Salir de la función después de reiniciar
+            }
+            
+
+            correctCount = 0;
+            incorrectCount = 0;
+            answeredCount = 0;
+            incorrectQuestions = [];
+            document.getElementById('correct-count').textContent = correctCount;
+            document.getElementById('incorrect-count').textContent = incorrectCount;
+            document.getElementById('answered-count').textContent = answeredCount;
+            document.getElementById('score-container').style.display = 'none';
+            document.getElementById('incorrect-questions-container').style.display = 'none';
+            document.getElementById('incorrect-questions-list').innerHTML = '';
+            shuffledQuestions = availableQuestions.sort(() => Math.random() - 0.5).slice(0, questionsPerTest);
+            currentQuestionIndex = 0;
+            document.getElementById('start-button').style.display = 'none';
+            document.getElementById('next-button').style.display = 'none';
+            document.getElementById('answer-buttons').style.display = 'none';
+            document.getElementById('author-name').style.display = 'none';
+
+            // Mostrar la primera pregunta del nuevo test
+            showQuestion(shuffledQuestions[currentQuestionIndex]);
+
+            // Mostrar los elementos relevantes para el nuevo test
+            document.getElementById('question-container').style.display = 'block';
+            document.getElementById('question-options').style.display = 'block'
+        }
+
+        function resetQuestions() {
+           alert('Reiniciando preguntas...');
+            availableQuestions = allQuestions.slice();
+            localStorage.setItem('availableQuestions', JSON.stringify(availableQuestions));
+            document.getElementById('available-questions-count').textContent = availableQuestions.length;
+            document.getElementById('start-button').style.display = 'block';
+        }
+
+        function showQuestion(question) {
+            document.getElementById('question').innerText = question.question;
+            document.getElementById('question').style.color = 'white'; // Restaurar el color original
+            const optionsContainer = document.getElementById('question-options');
+            optionsContainer.innerHTML = ''; // Limpiar el contenido anterior
+
+            question.options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.classList.add('answer');
+                optionElement.textContent = option;
+                optionElement.setAttribute('data-option', String.fromCharCode(97 + index));
+                optionElement.setAttribute('onclick', `checkAnswer('${String.fromCharCode(97 + index)}')`);
+                optionsContainer.appendChild(optionElement);
+            });
+
+            document.getElementById('answer-buttons').style.display = 'block';
+        }
+
+        function checkAnswer(answer) {
+            const question = shuffledQuestions[currentQuestionIndex];
+            if (answer === question.correct) {
+                document.getElementById('question').style.color = 'green';
+                correctCount += pointsPerQuestion;
+                availableQuestions = availableQuestions.filter(q => q.question !== question.question);
+                localStorage.setItem('availableQuestions', JSON.stringify(availableQuestions));
+                document.getElementById('available-questions-count').textContent = availableQuestions.length;
+            } else {
+                document.getElementById('question').style.color = 'red';
+                incorrectCount++;
+                incorrectQuestions.push({ question: question.question, answer: answer });
+
+                // Resaltar la respuesta correcta
+                const correctOption = document.querySelector(`[data-option="${question.correct}"]`);
+                if (correctOption) {
+                    correctOption.style.backgroundColor = 'green';
+                    correctOption.style.color = 'white';
+                }
+            }
+            answeredCount++;
+            document.getElementById('correct-count').textContent = correctCount;
+            document.getElementById('incorrect-count').textContent = incorrectCount;
+            document.getElementById('answered-count').textContent = answeredCount;
+
+            // Deshabilitar las respuestas para esta pregunta
+            const answerButtons = document.querySelectorAll('.answer');
+            answerButtons.forEach(button => {
+                button.onclick = null; // Eliminar el manejador de eventos
+                button.style.cursor = 'default'; // Cambiar el cursor para indicar que está deshabilitado
+            });
+
+            document.getElementById('answer-buttons').style.display = 'none';
+            document.getElementById('next-button').style.display = 'block';
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < shuffledQuestions.length) {
+                showQuestion(shuffledQuestions[currentQuestionIndex]);
+                document.getElementById('question').style.color = 'white';
+                document.getElementById('next-button').style.display = 'none';
+                document.getElementById('answer-buttons').style.display = 'block';
+            } else {
+                let adjustedCorrectCount = correctCount;
+
+                // Calcular penalización por respuestas incorrectas
+                incorrectQuestions.forEach(entry => {
+                    const question = allQuestions.find(q => q.question === entry.question);
+                    const incorrectPenalty = pointsPerQuestion * 0.4; // Penalización del 40% de una respuesta correcta
+                    adjustedCorrectCount -= incorrectPenalty;
+                });
+
+                // Calcular la nota final
+                const score = (adjustedCorrectCount / questionsPerTest) * 10;
+
+                document.getElementById('question-container').style.display = 'none'; // Ocultar contenedor de preguntas
+                document.getElementById('question-options').style.display = 'none'; // Ocultar opciones de preguntas
+
+                document.getElementById('question').innerText = `Test terminado. Aciertos: ${correctCount}, Fallos: ${incorrectCount}, Nota: ${score.toFixed(2)}`;
+                document.getElementById('score').textContent = score.toFixed(2);
+                document.getElementById('score-container').style.display = 'block';
+                document.getElementById('next-button').style.display = 'none';
+                document.getElementById('start-button').style.display = 'block';
+                document.getElementById('author-name').style.display = 'block';
+
+                showIncorrectQuestions();
+            }
+        }
+
+        function showIncorrectQuestions() {
+            const incorrectQuestionsContainer = document.getElementById('incorrect-questions-container');
+            const incorrectQuestionsList = document.getElementById('incorrect-questions-list');
+            incorrectQuestions.forEach(entry => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${entry.question} (Tu respuesta: ${entry.answer})`;
+                incorrectQuestionsList.appendChild(listItem);
+            });
+            incorrectQuestionsContainer.style.display = 'block';
+            document.getElementById('answer-buttons').style.display = 'none'; // Asegurarse de ocultar las opciones de respuesta al mostrar las preguntas incorrectas
+            document.getElementById('question-options').style.display = 'none'; // Asegurar que las opciones estén ocultas
+        }
+    </script>
+
+<button id="reset-button" onclick="resetQuestions()">Reiniciar Preguntas</button>
+</body>
+</html>
