@@ -1273,7 +1273,7 @@ const questionsPerTest = 10; // Total de preguntas en el test
                 });
 
                 // Calcular la nota final
-                const score = (adjustedCorrectCount / questionsPerTest) * 10;
+                const score = (correctCount * 0.4) - (incorrectCount * 0.16);
 
                 document.getElementById('question-container').style.display = 'none'; // Ocultar contenedor de preguntas
                 document.getElementById('question-options').style.display = 'none'; // Ocultar opciones de preguntas
