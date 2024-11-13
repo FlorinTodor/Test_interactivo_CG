@@ -1223,7 +1223,7 @@ const questionsPerTest = 10; // Total de preguntas en el test
             const question = shuffledQuestions[currentQuestionIndex];
             if (answer === question.correct) {
                 document.getElementById('question').style.color = 'green';
-                correctCount += pointsPerQuestion;
+                correctCount += 1;
                 availableQuestions = availableQuestions.filter(q => q.question !== question.question);
                 localStorage.setItem('availableQuestions', JSON.stringify(availableQuestions));
                 document.getElementById('available-questions-count').textContent = availableQuestions.length;
